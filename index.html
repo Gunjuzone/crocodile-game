@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Shakur's English Crocodile Game</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ── VARIABLES ── */
+    :root {
+      --green-dark:  #1a7a4a;
+      --green-mid:   #28a865;
+      --green-light: #e6f7ee;
+      --yellow:      #f5c842;
+      --yellow-dark: #d4a500;
+      --orange:      #f2793a;
+      --red:         #e84040;
+      --bg:          #f7fbf9;
+      --card:        #ffffff;
+      --text:        #1c2b22;
+      --text-mid:    #4a6358;
+      --text-soft:   #8aab99;
+      --border:      #cce8d8;
+      --shadow:      0 4px 20px rgba(26,122,74,0.10);
+      --shadow-lg:   0 8px 40px rgba(26,122,74,0.16);
+      --radius:      18px;
+      --radius-sm:   10px;
+    }
+
+    /* ── RESET ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      height: 100%;
+      font-family: 'Nunito', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      -webkit-tap-highlight-color: transparent;
+      overscroll-behavior: none;
+    }
+
+    /* ── SCREENS ── */
+    .screen {
+      display: none;
+      min-height: 100dvh;
+      padding: 20px 16px 40px;
+      max-width: 480px;
+      margin: 0 auto;
+      flex-direction: column;
+      align-items: center;
+    }
+    .screen.active { display: flex; }
+
+    /* ── HEADER DECO ── */
+    .croc-header {
+      text-align: center;
+      margin-bottom: 28px;
+      position: relative;
+    }
+    .croc-emoji {
+      font-size: 64px;
+      line-height: 1;
+      display: block;
+      margin-bottom: 10px;
+      animation: wobble 3s ease-in-out infinite;
+    }
+    @keyframes wobble {
+      0%, 100% { transform: rotate(-4deg); }
+      50%       { transform: rotate(4deg); }
+    }
+    .croc-header h1 {
+      font-family: 'Fredoka One', cursive;
+      font-size: clamp(22px, 6vw, 30px);
+      color: var(--green-dark);
+      line-height: 1.15;
+      letter-spacing: 0.3px;
+    }
+    .croc-header .subtitle {
+      font-size: 15px;
+      color: var(--text-mid);
+      margin-top: 6px;
+      font-weight: 600;
+    }
+
+    /* ── CARDS ── */
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 22px 20px;
+      width: 100%;
+      margin-bottom: 16px;
+      border: 1.5px solid var(--border);
+    }
+    .card-title {
+      font-family: 'Fredoka One', cursive;
+      font-size: 17px;
+      color: var(--green-dark);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* ── HOW TO PLAY ── */
+    .how-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .how-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 14.5px;
+      color: var(--text-mid);
+      font-weight: 600;
+      line-height: 1.4;
+    }
+    .how-badge {
+      background: var(--green-mid);
+      color: #fff;
+      font-family: 'Fredoka One', cursive;
+      font-size: 13px;
+      border-radius: 50%;
+      width: 26px;
+      height: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    /* ── BUTTONS ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-family: 'Fredoka One', cursive;
+      font-size: 18px;
+      letter-spacing: 0.4px;
+      border: none;
+      border-radius: 50px;
+      padding: 16px 28px;
+      cursor: pointer;
+      transition: transform .13s, box-shadow .13s, background .13s;
+      width: 100%;
+      touch-action: manipulation;
+    }
+    .btn:active { transform: scale(0.96); }
+
+    .btn-primary {
+      background: var(--green-mid);
+      color: #fff;
+      box-shadow: 0 4px 0 var(--green-dark);
+    }
+    .btn-primary:active { box-shadow: 0 2px 0 var(--green-dark); transform: translateY(2px) scale(0.98); }
+
+    .btn-secondary {
+      background: var(--yellow);
+      color: var(--text);
+      box-shadow: 0 4px 0 var(--yellow-dark);
+    }
+    .btn-secondary:active { box-shadow: 0 2px 0 var(--yellow-dark); transform: translateY(2px) scale(0.98); }
+
+    .btn-ghost {
+      background: var(--green-light);
+      color: var(--green-dark);
+      box-shadow: none;
+      font-size: 16px;
+    }
+
+    .btn-danger {
+      background: var(--red);
+      color: #fff;
+      box-shadow: 0 4px 0 #b52d2d;
+    }
+
+    .btn-sm {
+      font-size: 14px;
+      padding: 10px 18px;
+      width: auto;
+    }
+
+    /* ── CATEGORY GRID ── */
+    .cat-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      width: 100%;
+      margin-bottom: 16px;
+    }
+    .cat-btn {
+      background: var(--card);
+      border: 2.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 14px 8px;
+      cursor: pointer;
+      text-align: center;
+      transition: all .15s;
+      touch-action: manipulation;
+    }
+    .cat-btn .cat-icon { font-size: 28px; display: block; margin-bottom: 4px; }
+    .cat-btn .cat-label {
+      font-family: 'Fredoka One', cursive;
+      font-size: 15px;
+      color: var(--text-mid);
+      display: block;
+    }
+    .cat-btn.selected {
+      border-color: var(--green-mid);
+      background: var(--green-light);
+      box-shadow: 0 0 0 3px rgba(40,168,101,0.2);
+    }
+    .cat-btn.selected .cat-label { color: var(--green-dark); }
+    .cat-btn:active { transform: scale(0.95); }
+
+    /* ── WORD DISPLAY ── */
+    .word-box {
+      width: 100%;
+      background: var(--green-light);
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      min-height: 110px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      margin-bottom: 12px;
+      position: relative;
+      overflow: hidden;
+    }
+    .word-text {
+      font-family: 'Fredoka One', cursive;
+      font-size: clamp(36px, 10vw, 52px);
+      color: var(--green-dark);
+      text-align: center;
+      padding: 10px 20px;
+      letter-spacing: 1px;
+      transition: opacity .25s;
+    }
+    .word-hidden-label {
+      font-family: 'Fredoka One', cursive;
+      font-size: 22px;
+      color: var(--text-soft);
+      letter-spacing: 2px;
+      display: none;
+    }
+    .word-box.hidden .word-text { display: none; }
+    .word-box.hidden .word-hidden-label { display: block; }
+    .word-placeholder {
+      font-family: 'Fredoka One', cursive;
+      font-size: 20px;
+      color: var(--text-soft);
+    }
+
+    /* ── HINT BOX ── */
+    .hint-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      margin-bottom: 12px;
+    }
+    .hint-badge {
+      background: var(--yellow);
+      color: var(--text);
+      font-family: 'Fredoka One', cursive;
+      font-size: 15px;
+      padding: 8px 16px;
+      border-radius: 50px;
+      white-space: nowrap;
+      min-width: 140px;
+      text-align: center;
+      box-shadow: 0 2px 0 var(--yellow-dark);
+    }
+
+    /* ── ACTION BUTTONS ROW ── */
+    .actions-row {
+      display: flex;
+      gap: 10px;
+      width: 100%;
+      margin-bottom: 14px;
+    }
+
+    /* ── TIMER ── */
+    .timer-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1.5px solid var(--border);
+      box-shadow: var(--shadow);
+      padding: 18px 20px;
+      width: 100%;
+      margin-bottom: 16px;
+    }
+    .timer-display-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .timer-label {
+      font-family: 'Fredoka One', cursive;
+      font-size: 16px;
+      color: var(--text-mid);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .timer-digits {
+      font-family: 'Fredoka One', cursive;
+      font-size: 42px;
+      color: var(--green-dark);
+      letter-spacing: 2px;
+      transition: color .3s;
+    }
+    .timer-digits.warning { color: var(--orange); }
+    .timer-digits.danger  { color: var(--red); animation: blink .6s infinite; }
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+    .timer-controls {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .timer-controls .btn { font-size: 15px; padding: 11px 14px; }
+
+    .preset-row {
+      display: flex;
+      gap: 8px;
+    }
+    .preset-btn {
+      flex: 1;
+      background: var(--green-light);
+      border: 1.5px solid var(--border);
+      border-radius: 50px;
+      font-family: 'Fredoka One', cursive;
+      font-size: 14px;
+      color: var(--green-dark);
+      padding: 8px 4px;
+      cursor: pointer;
+      text-align: center;
+      transition: all .15s;
+      touch-action: manipulation;
+    }
+    .preset-btn.active {
+      background: var(--green-mid);
+      color: #fff;
+      border-color: var(--green-mid);
+    }
+    .preset-btn:active { transform: scale(0.94); }
+
+    .timer-msg {
+      display: none;
+      background: var(--orange);
+      color: #fff;
+      font-family: 'Fredoka One', cursive;
+      font-size: 17px;
+      text-align: center;
+      border-radius: var(--radius-sm);
+      padding: 10px 16px;
+      margin-top: 10px;
+      animation: fadeIn .4s ease;
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* ── STARTERS PANEL ── */
+    .starters-toggle {
+      width: 100%;
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 16px 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: 'Fredoka One', cursive;
+      font-size: 17px;
+      color: var(--green-dark);
+      touch-action: manipulation;
+      transition: background .15s;
+      margin-bottom: 0;
+    }
+    .starters-toggle:active { background: var(--green-light); }
+    .starters-arrow {
+      font-size: 20px;
+      transition: transform .25s;
+    }
+    .starters-panel {
+      display: none;
+      width: 100%;
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-top: none;
+      border-radius: 0 0 var(--radius) var(--radius);
+      padding: 14px 16px 18px;
+      margin-top: -6px;
+      margin-bottom: 16px;
+      animation: slideDown .2s ease;
+    }
+    @keyframes slideDown { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+    .starters-panel.open { display: block; }
+    .starters-toggle.open { border-radius: var(--radius) var(--radius) 0 0; border-bottom-color: transparent; }
+    .starters-toggle.open .starters-arrow { transform: rotate(180deg); }
+
+    .starter-chips {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .starter-chip {
+      background: var(--green-light);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      font-size: 14px;
+      color: var(--text);
+      font-weight: 700;
+      line-height: 1.35;
+    }
+    .starter-chip em {
+      color: var(--green-mid);
+      font-style: normal;
+    }
+    .starters-note {
+      font-size: 12px;
+      color: var(--text-soft);
+      margin-top: 10px;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    /* ── BACK BUTTON ── */
+    .back-btn {
+      align-self: flex-start;
+      background: none;
+      border: none;
+      font-family: 'Fredoka One', cursive;
+      font-size: 16px;
+      color: var(--green-dark);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 14px;
+      padding: 6px 0;
+      touch-action: manipulation;
+    }
+    .back-btn:active { opacity: 0.6; }
+
+    /* ── GAME SCREEN HEADER ── */
+    .game-header {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .game-title {
+      font-family: 'Fredoka One', cursive;
+      font-size: 20px;
+      color: var(--green-dark);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* ── FOOTER ── */
+    .footer {
+      font-size: 12px;
+      color: var(--text-soft);
+      text-align: center;
+      margin-top: auto;
+      padding-top: 20px;
+      font-weight: 600;
+    }
+
+    /* ── DIVIDER ── */
+    .divider {
+      width: 100%;
+      border: none;
+      border-top: 1.5px solid var(--border);
+      margin: 4px 0 14px;
+    }
+
+    /* ── NO-SELECT ── */
+    .word-text, .word-hidden-label, .timer-digits {
+      user-select: none;
+      -webkit-user-select: none;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+     HOME SCREEN
+══════════════════════════════════════ -->
+<section class="screen active" id="homeScreen">
+
+  <div class="croc-header" style="margin-top: 24px;">
+    <span class="croc-emoji">🐊</span>
+    <h1>Shakur's English<br>Crocodile Game</h1>
+    <p class="subtitle">Practice question tags through fun guessing!</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📋 How to Play</div>
+    <ul class="how-list">
+      <li>
+        <span class="how-badge">1</span>
+        <span>Scan the QR code and open the app on your phone.</span>
+      </li>
+      <li>
+        <span class="how-badge">2</span>
+        <span>Pick a category (Animals, Food, Jobs, or Hobbies).</span>
+      </li>
+      <li>
+        <span class="how-badge">3</span>
+        <span>One student is the <strong>Dealer</strong> (sees the word). The other is the <strong>Guesser</strong>.</span>
+      </li>
+      <li>
+        <span class="how-badge">4</span>
+        <span>The Guesser asks YES/NO questions using <strong>question tags</strong> to find the word!</span>
+      </li>
+    </ul>
+  </div>
+
+  <button class="btn btn-primary" onclick="goToGame()" style="margin-top: 4px;">
+    🎮 Start Game
+  </button>
+
+  <p class="footer">Made for ESL classroom practice</p>
+</section>
+
+
+<!-- ══════════════════════════════════════
+     GAME SCREEN
+══════════════════════════════════════ -->
+<section class="screen" id="gameScreen">
+
+  <div class="game-header">
+    <button class="back-btn" onclick="goToHome()">← Back</button>
+    <span class="game-title">🐊 Crocodile</span>
+  </div>
+
+  <!-- CATEGORY SELECTION -->
+  <div class="card-title" style="width:100%; font-family:'Fredoka One',cursive; font-size:16px; color:var(--green-dark); margin-bottom:10px;">
+    🗂️ Choose a Category
+  </div>
+  <div class="cat-grid">
+    <button class="cat-btn" data-cat="Animals" onclick="selectCat(this)">
+      <span class="cat-icon">🐘</span>
+      <span class="cat-label">Animals</span>
+    </button>
+    <button class="cat-btn" data-cat="Food" onclick="selectCat(this)">
+      <span class="cat-icon">🍕</span>
+      <span class="cat-label">Food</span>
+    </button>
+    <button class="cat-btn" data-cat="Jobs" onclick="selectCat(this)">
+      <span class="cat-icon">👨‍⚕️</span>
+      <span class="cat-label">Jobs</span>
+    </button>
+    <button class="cat-btn" data-cat="Hobbies" onclick="selectCat(this)">
+      <span class="cat-icon">🎨</span>
+      <span class="cat-label">Hobbies</span>
+    </button>
+  </div>
+
+  <!-- GENERATE BUTTON -->
+  <button class="btn btn-primary" id="generateBtn" onclick="generateWord()" style="margin-bottom:14px;" disabled>
+    🎲 Generate Word
+  </button>
+
+  <!-- WORD DISPLAY -->
+  <div class="word-box" id="wordBox">
+    <span class="word-text" id="wordDisplay"></span>
+    <span class="word-hidden-label">🙈 WORD HIDDEN</span>
+    <span class="word-placeholder" id="wordPlaceholder">Choose a category first</span>
+  </div>
+
+  <!-- HINT + ACTIONS -->
+  <div class="hint-row">
+    <div class="hint-badge" id="hintBadge">🔤 First letter: ?</div>
+    <button class="btn btn-ghost btn-sm" id="hintBtn" onclick="showHint()" disabled>Show Hint</button>
+  </div>
+
+  <div class="actions-row">
+    <button class="btn btn-secondary" id="toggleHideBtn" onclick="toggleHide()" disabled style="flex:1;">
+      🙈 Hide Word
+    </button>
+    <button class="btn btn-ghost" id="newWordBtn" onclick="generateWord()" disabled style="flex:1; font-size:15px;">
+      🔄 New Word
+    </button>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- TIMER -->
+  <div class="timer-card">
+    <div class="timer-display-row">
+      <span class="timer-label">⏱️ Timer</span>
+      <span class="timer-digits" id="timerDisplay">01:00</span>
+    </div>
+
+    <div class="timer-controls">
+      <button class="btn btn-primary" id="timerStartBtn" onclick="timerStartPause()" style="flex:1;">▶ Start</button>
+      <button class="btn btn-ghost" onclick="timerReset()" style="flex:0.55; font-size:14px;">↺ Reset</button>
+    </div>
+
+    <div class="preset-row">
+      <button class="preset-btn active" data-secs="60" onclick="setPreset(this, 60)">60 s</button>
+      <button class="preset-btn" data-secs="90"  onclick="setPreset(this, 90)">90 s</button>
+      <button class="preset-btn" data-secs="120" onclick="setPreset(this, 120)">120 s</button>
+    </div>
+
+    <div class="timer-msg" id="timerMsg">⏰ Time's up! Switch roles. 🔄</div>
+  </div>
+
+  <!-- QUESTION TAG STARTERS -->
+  <button class="starters-toggle" id="startersToggle" onclick="toggleStarters()">
+    <span>💬 Question Tag Starters</span>
+    <span class="starters-arrow" id="startersArrow">▼</span>
+  </button>
+  <div class="starters-panel" id="startersPanel">
+    <div class="starter-chips">
+      <div class="starter-chip">"It's a/an ___, <em>isn't it?</em>"</div>
+      <div class="starter-chip">"It isn't ___, <em>is it?</em>"</div>
+      <div class="starter-chip">"People use it, <em>don't they?</em>"</div>
+      <div class="starter-chip">"People don't use it, <em>do they?</em>"</div>
+      <div class="starter-chip">"You can ___ with it, <em>can't you?</em>"</div>
+      <div class="starter-chip">"You can't ___ with it, <em>can you?</em>"</div>
+      <div class="starter-chip">"It's common, <em>isn't it?</em>"</div>
+      <div class="starter-chip">"It's expensive, <em>isn't it?</em>"</div>
+      <div class="starter-chip">"It lives in water, <em>doesn't it?</em>"</div>
+      <div class="starter-chip">"Kids like it, <em>don't they?</em>"</div>
+      <div class="starter-chip">"It comes from a country, <em>doesn't it?</em>"</div>
+    </div>
+    <p class="starters-note">Tap a starter to read it aloud to your partner!</p>
+  </div>
+
+  <p class="footer">🐊 Shakur's English Crocodile Game</p>
+</section>
+
+
+<script>
+/* ───────────────────────────────────────
+   WORD BANKS
+─────────────────────────────────────── */
+const wordBanks = {
+  Animals: [
+    'elephant','giraffe','penguin','dolphin','parrot','octopus','crocodile',
+    'cheetah','flamingo','gorilla','hamster','jellyfish','kangaroo','leopard',
+    'ostrich','peacock','rabbit','rhino','scorpion','shark','squirrel','tiger',
+    'turtle','wolf','zebra','butterfly','eagle','frog','lizard','owl'
+  ],
+  Food: [
+    'pizza','sushi','burger','chocolate','sandwich','strawberry','noodles',
+    'mango','pancake','popcorn','watermelon','taco','soup','cheese','donut',
+    'spaghetti','curry','banana','ice cream','dumpling','croissant','waffle',
+    'avocado','pineapple','hot dog','kebab','ramen','lasagna','brownie','pretzel'
+  ],
+  Jobs: [
+    'teacher','doctor','chef','pilot','astronaut','firefighter','engineer',
+    'nurse','artist','photographer','scientist','mechanic','lawyer','journalist',
+    'architect','dentist','farmer','librarian','musician','plumber','programmer',
+    'surgeon','vet','actor','baker','carpenter','electrician','judge','sailor','soldier'
+  ],
+  Hobbies: [
+    'swimming','painting','gaming','cooking','reading','cycling','dancing',
+    'singing','hiking','photography','knitting','skateboarding','gardening',
+    'coding','fishing','yoga','chess','drawing','baking','climbing',
+    'surfing','bowling','archery','boxing','camping','karate','pottery','rowing','sculpting','writing'
+  ]
+};
+
+/* ───────────────────────────────────────
+   STATE
+─────────────────────────────────────── */
+let selectedCat   = null;
+let currentWord   = '';
+let wordVisible   = true;
+let hintShown     = false;
+
+// Timer state
+let timerMax      = 60;
+let timerLeft     = 60;
+let timerRunning  = false;
+let timerInterval = null;
+
+/* ───────────────────────────────────────
+   NAVIGATION
+─────────────────────────────────────── */
+function goToGame() {
+  document.getElementById('homeScreen').classList.remove('active');
+  document.getElementById('gameScreen').classList.add('active');
+  window.scrollTo(0, 0);
+}
+function goToHome() {
+  document.getElementById('gameScreen').classList.remove('active');
+  document.getElementById('homeScreen').classList.add('active');
+  timerStop();
+  window.scrollTo(0, 0);
+}
+
+/* ───────────────────────────────────────
+   CATEGORY SELECTION
+─────────────────────────────────────── */
+function selectCat(btn) {
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selectedCat = btn.dataset.cat;
+
+  document.getElementById('generateBtn').disabled = false;
+  document.getElementById('wordPlaceholder').textContent = 'Tap "Generate Word"!';
+  document.getElementById('wordDisplay').textContent = '';
+
+  // Reset hint + hide
+  resetWordState();
+}
+
+/* ───────────────────────────────────────
+   WORD GENERATION
+─────────────────────────────────────── */
+function generateWord() {
+  if (!selectedCat) return;
+  const bank = wordBanks[selectedCat];
+  let next = currentWord;
+  while (next === currentWord && bank.length > 1) {
+    next = bank[Math.floor(Math.random() * bank.length)];
+  }
+  currentWord = next;
+
+  document.getElementById('wordDisplay').textContent = currentWord.toUpperCase();
+  document.getElementById('wordPlaceholder').style.display = 'none';
+  document.getElementById('wordBox').classList.remove('hidden');
+
+  wordVisible = true;
+  document.getElementById('toggleHideBtn').textContent = '🙈 Hide Word';
+  document.getElementById('toggleHideBtn').disabled = false;
+  document.getElementById('newWordBtn').disabled = false;
+  document.getElementById('hintBtn').disabled = false;
+
+  resetHint();
+  timerStop();
+  timerReset();
+  document.getElementById('timerMsg').style.display = 'none';
+}
+
+function resetWordState() {
+  currentWord   = '';
+  wordVisible   = true;
+  document.getElementById('wordBox').classList.remove('hidden');
+  document.getElementById('wordDisplay').textContent = '';
+  document.getElementById('toggleHideBtn').textContent = '🙈 Hide Word';
+  document.getElementById('toggleHideBtn').disabled = true;
+  document.getElementById('newWordBtn').disabled = true;
+  document.getElementById('hintBtn').disabled = true;
+  resetHint();
+}
+
+/* ───────────────────────────────────────
+   HIDE / REVEAL
+─────────────────────────────────────── */
+function toggleHide() {
+  if (!currentWord) return;
+  wordVisible = !wordVisible;
+  const box = document.getElementById('wordBox');
+  const btn = document.getElementById('toggleHideBtn');
+  if (wordVisible) {
+    box.classList.remove('hidden');
+    btn.textContent = '🙈 Hide Word';
+  } else {
+    box.classList.add('hidden');
+    btn.textContent = '👁️ Reveal Word';
+  }
+}
+
+/* ───────────────────────────────────────
+   HINT
+─────────────────────────────────────── */
+function showHint() {
+  if (!currentWord || hintShown) return;
+  hintShown = true;
+  const letter = currentWord[0].toUpperCase();
+  document.getElementById('hintBadge').textContent = `🔤 First letter: ${letter}`;
+  document.getElementById('hintBtn').textContent = '✅ Hint shown';
+  document.getElementById('hintBtn').disabled = true;
+}
+function resetHint() {
+  hintShown = false;
+  document.getElementById('hintBadge').textContent = '🔤 First letter: ?';
+  document.getElementById('hintBtn').textContent = 'Show Hint';
+  document.getElementById('hintBtn').disabled = !currentWord;
+}
+
+/* ───────────────────────────────────────
+   TIMER
+─────────────────────────────────────── */
+function formatTime(s) {
+  const m = Math.floor(s / 60).toString().padStart(2, '0');
+  const sec = (s % 60).toString().padStart(2, '0');
+  return `${m}:${sec}`;
+}
+function updateTimerDisplay() {
+  const el = document.getElementById('timerDisplay');
+  el.textContent = formatTime(timerLeft);
+  el.classList.remove('warning','danger');
+  if (timerLeft <= 10) el.classList.add('danger');
+  else if (timerLeft <= 20) el.classList.add('warning');
+}
+function timerStartPause() {
+  if (timerRunning) {
+    timerStop();
+  } else {
+    timerStart();
+  }
+}
+function timerStart() {
+  if (timerLeft <= 0) timerReset();
+  timerRunning = true;
+  document.getElementById('timerStartBtn').textContent = '⏸ Pause';
+  document.getElementById('timerMsg').style.display = 'none';
+  timerInterval = setInterval(() => {
+    timerLeft--;
+    updateTimerDisplay();
+    if (timerLeft <= 0) {
+      timerStop();
+      document.getElementById('timerMsg').style.display = 'block';
+    }
+  }, 1000);
+}
+function timerStop() {
+  clearInterval(timerInterval);
+  timerRunning = false;
+  document.getElementById('timerStartBtn').textContent = '▶ Start';
+}
+function timerReset() {
+  timerStop();
+  timerLeft = timerMax;
+  updateTimerDisplay();
+  document.getElementById('timerMsg').style.display = 'none';
+}
+function setPreset(btn, secs) {
+  document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  timerMax  = secs;
+  timerLeft = secs;
+  timerStop();
+  updateTimerDisplay();
+  document.getElementById('timerMsg').style.display = 'none';
+}
+
+/* ───────────────────────────────────────
+   STARTERS PANEL
+─────────────────────────────────────── */
+function toggleStarters() {
+  const panel  = document.getElementById('startersPanel');
+  const toggle = document.getElementById('startersToggle');
+  const arrow  = document.getElementById('startersArrow');
+  const open   = panel.classList.toggle('open');
+  toggle.classList.toggle('open', open);
+}
+
+/* Init */
+updateTimerDisplay();
+</script>
+</body>
+</html>
